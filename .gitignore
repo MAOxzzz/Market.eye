@@ -1,0 +1,76 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project specific
+*.db
+*.h5
+*.pkl
+report.pdf
+comprehensive_report.pdf
+
+# Generated CSV files
+data/stock_data/uploaded_dataset.csv
+data/stock_data/expanded_dataset.csv
+data/stock_data/updated_dataset.csv
+forecasting/data/test_data.csv
+forecasting/data/test_data_updated.csv
+forecasting/data/stock_data.csv
+forecasting/data/stock_data_updated.csv
+forecasting/data/stock_predictions.csv 
