@@ -51,7 +51,8 @@ market-eye-ai/
 
 ### Installation
 
-1. Clone the repository   ```bash
+1. Clone the repository   
+```bash
    git clone https://github.com/MAOxzzz/Market.eye.git
    cd Market.eye
    ```
