@@ -73,4 +73,6 @@ forecasting/data/test_data.csv
 forecasting/data/test_data_updated.csv
 forecasting/data/stock_data.csv
 forecasting/data/stock_data_updated.csv
-forecasting/data/stock_predictions.csv 
+forecasting/data/stock_predictions.csv
+
+# Include reports for project evidence# reports/  

@@ -66,8 +66,8 @@ class ForecastAPI:
                 print(f"Missing required columns in dataset. Found: {df.columns.tolist()}")
                 return None, None
                 
-            # Convert date to datetime with error handling
-            df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+            # Convert date to datetime with error handling and utc=True
+            df['Date'] = pd.to_datetime(df['Date'], errors='coerce', utc=True)
             
             # Drop rows where Date conversion failed
             df = df.dropna(subset=['Date'])

@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from sklearn.linear_model import LinearRegression
 import tensorflow as tf
 import keras
 from keras import Sequential
@@ -14,11 +13,10 @@ import os
 import datetime
 import pickle
 
-
-class StockForecaster:
+class LSTMForecaster:
     def __init__(self, data_path, model_dir='forecasting/models'):
         """
-        Initialize the stock forecaster.
+        Initialize the LSTM forecaster.
         
         Args:
             data_path (str): Path to the stock data CSV file
@@ -38,12 +36,13 @@ class StockForecaster:
         """Load and clean the stock data."""
         self.df = pd.read_csv(self.data_path)
         
-        # Convert data types
+        # Clean data
         self.df['Date'] = pd.to_datetime(self.df['Date'], errors='coerce', utc=True)
         self.df['Close'] = pd.to_numeric(self.df['Close'], errors='coerce')
+        self.df['Volume'] = pd.to_numeric(self.df['Volume'], errors='coerce')
         
         # Drop rows with missing values
-        self.df.dropna(subset=['Date', 'Close'], inplace=True)
+        self.df.dropna(subset=['Date', 'Close', 'Volume'], inplace=True)
         
         # Sort by ticker and date
         self.df.sort_values(by=['Ticker', 'Date'], inplace=True)
@@ -298,28 +297,4 @@ class StockForecaster:
         plt.savefig(plot_path)
         plt.close()
         
-        return results
-
-
-if __name__ == "__main__":
-    # Example usage
-    forecaster = StockForecaster('data/stock_data/Dataset.csv')
-    forecaster.load_data()
-    
-    # Train models for each ticker
-    for ticker in ['AAPL', 'MSFT', 'GOOGL']:
-        print(f"Training model for {ticker}...")
-        forecaster.train_model(ticker)
-        
-        print(f"Evaluating model for {ticker}...")
-        metrics = forecaster.evaluate_model(ticker)
-        print(f"RMSE: {metrics['rmse']:.4f}")
-        print(f"R²: {metrics['r2']:.4f}")
-        
-    # Generate forecast
-    predictions = forecaster.generate_prediction_report()
-    print(predictions.head())
-    
-    # Save predictions to CSV
-    predictions.to_csv('forecasting/data/stock_predictions.csv', index=False)
-    print("Predictions saved to: forecasting/data/stock_predictions.csv") 
+        return results 

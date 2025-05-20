@@ -4,35 +4,48 @@ import logging
 import google.generativeai as genai
 from datetime import datetime
 
+# Import config and rate limiter
+import sys
+import os
+
+# Add the project root to the path to allow importing from utils
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from utils.rate_limiter import RateLimiter, retry_with_backoff
+import config
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class GeminiTool:
     """Tool for generating market insights and recommendations using Google's Gemini API."""
     
-    def __init__(self, api_key=None, output_dir="data/recommendations"):
+    def __init__(self, api_key=None, output_dir=None):
         """
         Initialize the Gemini tool.
         
         Args:
-            api_key (str): Google Generative AI API key, if None, will try to load from environment
+            api_key (str): Google Generative AI API key, if None, will try to load from config
             output_dir (str): Directory to save recommendations
         """
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "AIzaSyCcB3tENdnFNKBIvciETMF196ldlUBmnyk")
-        self.output_dir = output_dir
+        self.api_key = api_key or config.GEMINI_API_KEY
+        if not self.api_key:
+            logger.warning("No Gemini API key provided. Functionality will be limited.")
+            
+        self.output_dir = output_dir or config.RECOMMENDATIONS_DIR
         self.model = None
         
         # Ensure output directory exists
-        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(self.output_dir, exist_ok=True)
         
         # Configure Gemini
-        self._configure()
+        if self.api_key:
+            self._configure()
     
     def _configure(self):
         """Configure the Gemini API."""
         try:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            self.model = genai.GenerativeModel(config.GEMINI_MODEL)
             logger.info("Gemini API configured successfully")
         except Exception as e:
             logger.error(f"Failed to configure Gemini API: {e}")
@@ -113,6 +126,27 @@ class GeminiTool:
         logger.info(f"Generated prompt for {ticker} ({len(prompt.split())} words)")
         return prompt
     
+    @RateLimiter(max_calls=config.GEMINI_REQUESTS_PER_MINUTE)
+    @retry_with_backoff(max_retries=config.GEMINI_MAX_RETRIES, initial_delay=config.GEMINI_RETRY_DELAY)
+    def _call_gemini_api(self, prompt):
+        """
+        Call the Gemini API with rate limiting and retries.
+        
+        Args:
+            prompt (str): The prompt to send to the API
+            
+        Returns:
+            str: The generated text response
+            
+        Raises:
+            Exception: If the API call fails after retries
+        """
+        if not self.model:
+            raise ValueError("Gemini API is not configured. Check your API key.")
+            
+        response = self.model.generate_content(prompt)
+        return response.text
+    
     def generate_recommendation(self, ticker, metrics, forecast, sector_comparison=None, mse_rmse=None):
         """
         Generate an investment recommendation.
@@ -139,8 +173,7 @@ class GeminiTool:
         # Generate the recommendation
         try:
             logger.info(f"Calling Gemini API for {ticker} recommendation")
-            response = self.model.generate_content(prompt)
-            recommendation = response.text
+            recommendation = self._call_gemini_api(prompt)
             
             # Extract the recommendation type (BUY, HOLD, SELL)
             rec_type = "UNKNOWN"
@@ -170,10 +203,20 @@ class GeminiTool:
             
         except Exception as e:
             logger.error(f"Error generating recommendation for {ticker}: {e}")
+            # Return a more helpful error message with a fallback recommendation
             return {
                 'ticker': ticker,
                 'error': str(e),
-                'timestamp': datetime.now().isoformat()
+                'timestamp': datetime.now().isoformat(),
+                'recommendation_type': "ERROR",
+                'recommendation_text': f"""HOLD
+
+Unable to generate AI recommendation due to an error: {str(e)}
+
+This could be due to API rate limits, connectivity issues, or an invalid API key.
+Please check your API configuration and try again later.
+
+Based on the available data, consider evaluating the price trends manually to make your investment decision."""
             }
     
     def _save_recommendation(self, recommendation):
@@ -188,6 +231,8 @@ class GeminiTool:
             
         logger.info(f"Saved recommendation to {filepath}")
     
+    @RateLimiter(max_calls=config.GEMINI_REQUESTS_PER_MINUTE)
+    @retry_with_backoff(max_retries=config.GEMINI_MAX_RETRIES, initial_delay=config.GEMINI_RETRY_DELAY)
     def generate_market_summary(self, metrics_dict, sector_comparison):
         """
         Generate an overall market summary.
@@ -233,8 +278,7 @@ class GeminiTool:
         
         try:
             logger.info("Calling Gemini API for market summary")
-            response = self.model.generate_content(prompt)
-            summary = response.text
+            summary = self._call_gemini_api(prompt)
             
             # Save the summary
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -248,7 +292,12 @@ class GeminiTool:
             
         except Exception as e:
             logger.error(f"Error generating market summary: {e}")
-            return f"Error generating market summary: {e}"
+            return f"""Error generating market summary.
+
+This could be due to API rate limits, connectivity issues, or an invalid API key.
+Please check your API configuration and try again later.
+
+Error details: {str(e)}"""
 
 
 if __name__ == "__main__":

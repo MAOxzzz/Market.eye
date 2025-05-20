@@ -15,7 +15,7 @@ A powerful AI-powered stock analysis platform with LSTM forecasting, AI investme
 - **Stock Price Visualization** - Interactive charts for historical stock data analysis
 - **AI Investment Recommendations** - Get AI-powered BUY/HOLD/SELL advice
 - **LSTM Price Forecasting** - Advanced deep learning models for price prediction
-- **PDF Report Generation** - Comprehensive reports for your investment decisions
+- **Enhanced PDF Report Generation** - Comprehensive reports with analytics, forecasts, error metrics, and AI-generated insights
 - **User Authentication** - Secure login and activity tracking
 - **Custom Dataset Upload** - Use your own stock datasets for analysis
 
@@ -23,22 +23,30 @@ A powerful AI-powered stock analysis platform with LSTM forecasting, AI investme
 
 ```
 market-eye-ai/
-├── data/                    # Data directory
-│   ├── stock_data/          # Stock price datasets
-│   ├── docs/                # Documentation and examples
-│   ├── reference/           # Reference implementations
-│   └── schema.sql           # Database schema
-├── forecasting/             # ML forecasting components
-│   ├── models/              # Trained ML models
-│   ├── data_updater.py      # Updates stock data
-│   ├── forecast_api.py      # API for forecasting
-│   └── stock_forecaster.py  # LSTM forecasting model
-├── scripts/                 # Utility scripts
-│   └── init_db.py           # Database initialization
-├── tests/                   # Test suite
-├── main.py                  # FastAPI backend
-├── streamlit_app.py         # Streamlit frontend
-└── requirements.txt         # Dependencies
+├── backend/                  # Backend components
+│   ├── agents/               # AI agents and intelligent components
+│   ├── models/               # ML models and prediction algorithms
+│   └── database/             # Database schemas and management
+├── frontend/                 # Frontend components
+│   └── pages/                # Individual UI pages and components
+├── docs/                     # Documentation
+│   └── report_templates/     # Templates for report generation
+├── data/                     # Data directory
+│   └── stock_data/           # Stock price datasets
+├── forecasting/              # ML forecasting components
+│   ├── models/               # Trained ML models
+│   ├── data_updater.py       # Updates stock data
+│   ├── forecast_api.py       # API for forecasting
+│   └── stock_forecaster.py   # LSTM forecasting model
+├── utils/                    # Utility functions and helpers
+├── tests/                    # Test suite
+├── scripts/                  # Utility scripts
+├── reports/                  # Generated PDF reports
+├── main.py                   # FastAPI backend
+├── streamlit_app.py          # Streamlit frontend
+├── requirements.txt          # Dependencies
+├── CODE_OF_CONDUCT.md        # Code of conduct guidelines
+└── CONTRIBUTING.md           # Contribution guidelines
 ```
 
 ## 🚀 Getting Started
@@ -104,6 +112,8 @@ The project uses LSTM (Long Short-Term Memory) neural networks to predict future
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+For detailed guidelines, please read our [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## 📄 License
 

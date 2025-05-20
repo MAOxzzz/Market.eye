@@ -1,0 +1,15 @@
+# Core data science and visualization libraries
+pandas==2.1.4
+numpy>=1.26.0
+matplotlib==3.8.2
+seaborn==0.13.1
+scikit-learn==1.4.0
+plotly==5.18.0
+
+# Machine learning
+tensorflow==2.16.1
+keras>=3.0.0  # Standalone Keras
+
+# Utilities
+requests==2.31.0
+schedule==1.2.0 

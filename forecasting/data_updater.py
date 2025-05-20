@@ -26,10 +26,11 @@ def update_dataset(dataset_path, output_path=None):
     # Load the dataset
     df = pd.read_csv(dataset_path)
     
-    # Convert date to datetime and ensure timezone-naive
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    if df['Date'].dt.tz is not None:
-        df['Date'] = df['Date'].dt.tz_localize(None)
+    # Convert date to datetime with utc=True to handle timezone consistently
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', utc=True)
+    # No need to check tz anymore since we're explicitly setting utc=True
+    # Now localize to None to make timezone-naive
+    df['Date'] = df['Date'].dt.tz_localize(None)
     
     # Get the unique tickers
     tickers = df['Ticker'].unique()
@@ -110,10 +111,10 @@ def setup_daily_update(dataset_path, output_path=None, update_time="00:00", end_
     """
     # Parse end date if provided
     if end_date:
-        end_date = pd.to_datetime(end_date)
+        end_date = pd.to_datetime(end_date, utc=True)
     else:
         # Default to December 31, 2024
-        end_date = pd.to_datetime("2024-12-31")
+        end_date = pd.to_datetime("2024-12-31", utc=True)
         
     def job():
         current_date = datetime.datetime.now()
@@ -164,17 +165,18 @@ def backfill_dataset(dataset_path, end_date=None, output_path=None):
         end_date = datetime.datetime.now().strftime('%Y-%m-%d')
     
     # Parse the end date and ensure it's timezone-naive
-    end_date = pd.to_datetime(end_date)
+    end_date = pd.to_datetime(end_date, utc=True)
     if end_date.tzinfo is not None:
         end_date = end_date.replace(tzinfo=None)
     
     # Load the dataset
     df = pd.read_csv(dataset_path)
     
-    # Convert Date to datetime and ensure it's timezone-naive
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
-    if df['Date'].dt.tz is not None:
-        df['Date'] = df['Date'].dt.tz_localize(None)
+    # Convert Date to datetime with utc=True to handle timezone consistently
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce', utc=True)
+    # No need to check tz anymore since we're explicitly setting utc=True
+    # Now localize to None to make timezone-naive
+    df['Date'] = df['Date'].dt.tz_localize(None)
     
     # Get the latest date in the dataset
     latest_date = df['Date'].max()

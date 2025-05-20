@@ -13,8 +13,8 @@ import secrets
 import re
 from email_validator import validate_email, EmailNotValidError
 
-# Import CrewAI router - commented out due to TensorFlow/Keras compatibility issues
-# from agents.api import router as crewai_router
+# Import CrewAI router
+from agents.api import router as crewai_router
 
 # ——— Config & Constants ———
 # Fix path resolution for PyInstaller bundle
@@ -193,8 +193,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include CrewAI router - commented out due to TensorFlow/Keras compatibility issues
-# app.include_router(crewai_router)
+# Include CrewAI router
+app.include_router(crewai_router)
 
 @app.get("/")
 async def root():

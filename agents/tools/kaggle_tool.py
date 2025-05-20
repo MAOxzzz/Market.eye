@@ -141,13 +141,64 @@ class KaggleTool:
         # Get the latest date in the data
         latest_date = df['Date'].max()
         
-        # TODO: Implement API calls to update data with latest market data
-        # For now, we'll just return the existing data with a log message
-        logger.info(f"Data update would fetch data newer than {latest_date}. This is a placeholder.")
+        # Get latest market data using pandas_datareader
+        try:
+            import pandas_datareader as pdr
+            from datetime import datetime, timedelta
+            
+            today = datetime.now().date()
+            next_day = latest_date.date() + timedelta(days=1)
+            
+            if next_day >= today:
+                logger.info(f"Data is already up to date (latest: {latest_date.date()}, today: {today})")
+                return df
+                
+            logger.info(f"Fetching new data from {next_day} to {today}")
+            
+            # Get list of tickers from existing data if not provided
+            if tickers is None:
+                tickers = df['Ticker'].unique().tolist()
+                
+            # For each ticker, fetch the latest data
+            new_data_frames = []
+            for ticker in tickers:
+                try:
+                    # Try to get data from Yahoo Finance
+                    new_data = pdr.data.get_data_yahoo(ticker, start=next_day, end=today)
+                    new_data = new_data.reset_index()
+                    new_data['Ticker'] = ticker
+                    
+                    # Rename columns to match our dataset format
+                    new_data = new_data.rename(columns={
+                        'Date': 'Date',
+                        'Open': 'Open',
+                        'High': 'High',
+                        'Low': 'Low',
+                        'Close': 'Close',
+                        'Volume': 'Volume',
+                        'Adj Close': 'Adj_Close'
+                    })
+                    
+                    new_data_frames.append(new_data)
+                    logger.info(f"Updated {ticker} with {len(new_data)} new rows")
+                except Exception as e:
+                    logger.warning(f"Failed to fetch data for {ticker}: {e}")
+                    
+            # If we got new data, append it to the existing data
+            if new_data_frames:
+                new_df = pd.concat(new_data_frames)
+                df = pd.concat([df, new_df]).reset_index(drop=True)
+                logger.info(f"Added {len(new_df)} rows of new data")
+            else:
+                logger.warning("No new data could be fetched from API")
+                
+        except ImportError:
+            logger.warning("pandas_datareader not available. Install with: pip install pandas-datareader")
+            logger.info(f"Data update would fetch data newer than {latest_date}. Skipping actual update.")
         
         # For demonstration, add metadata about the update
         df.attrs['last_updated'] = datetime.now().isoformat()
-        df.attrs['update_status'] = 'placeholder'
+        df.attrs['update_status'] = 'updated'
         
         return df
     
